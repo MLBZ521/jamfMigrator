@@ -3,7 +3,7 @@
 ###################################################################################################
 # Script Name:  jamf_unmanageComputer.sh
 # By:  Zack Thompson / Created:  11/17/2017
-# Version:  0.2 / Updated:  11/17/2017 / By:  ZT
+# Version:  0.3 / Updated:  11/20/2017 / By:  ZT
 #
 # Description:  This script uses the Jamf API to mark the device as unmanaged.
 #
@@ -33,15 +33,26 @@
 ##################################################
 # Setup Functions
 
+	function exitStatus {
+		if [ $1 != "0" ]; then
+			echo "Failed at step:  ${2}"
+			exit $1
+		fi
+	}
+
 	function tearDown {
-	# Remove JAMF Binary
-		/usr/local/bin/jamf removeFramework
-	# Unload LaunchDaemon
-		/bin/launchctl unload //Library/LaunchDaemons/com.github.mlbz521.UnmanageComputer.plist
-	# Remove LaunchDaemon
-		/bin/rm -f /Library/LaunchDaemons/com.github.mlbz521.UnmanageComputer.plist
-	# Delete Self
-		/bin/rm -f "$0"
+		# Unload LaunchDaemon
+			/bin/launchctl unload /Library/LaunchDaemons/com.github.mlbz521.UnmanageComputer.plist
+				# Function exitStatus
+					exitStatus $? "Unloading LaunchDaemon"
+		# Remove LaunchDaemon
+			/bin/rm -f /Library/LaunchDaemons/com.github.mlbz521.UnmanageComputer.plist
+				# Function exitStatus
+					exitStatus $? "Deleting LaunchDaemon"
+		# Delete Self
+			/bin/rm -f "$0"
+				# Function exitStatus
+					exitStatus $? "Deleting Script"
 	}
 
 ##################################################
@@ -49,16 +60,24 @@
 
 # Submit unamange payload to the JSS
 /usr/bin/curl -sfkuf "${jamfAPIUser}:${jamfAPIPassword}" "${jamfURL}/${getUUID}" -T $unmanagePayload -X PUT
-exitCode = $?
-if [ $exitCode != "0" ]; then
-	echo "FAILED"
-else
-	# Pause for a moment to get a response back from the JSS...
-		# /bin/sleep 5
-	# Function tearDown
-		tearDown
-	# Enroll machine
-		/usr/sbin/installer -dumplog -verbose -pkg $enrollPkg -allowUntrusted -target /
+	# Function exitStatus
+		exitStatus $? "Sending API Payload to Unmanage Computer"
 
-	exit 0
-fi
+# Pause for a moment to get a response back from the JSS...
+	# sleep 5
+
+# Remove JAMF Binary
+	/usr/local/bin/jamf removeFramework
+		# Function exitStatus
+			exitStatus $? "Removing Framework"
+
+# Enroll machine
+	/usr/sbin/installer -dumplog -verbose -pkg $enrollPkg -allowUntrusted -target /
+		# Function exitStatus
+			exitStatus $? "Sending API Payload to Unmanage Computer"
+
+# Function tearDown
+	tearDown
+
+exit 0
+
