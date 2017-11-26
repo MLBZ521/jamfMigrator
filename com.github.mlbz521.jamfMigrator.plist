@@ -7,11 +7,14 @@
 	<key>ProgramArguments</key>
 	<array>
 		<string>/bin/bash</string>
-		<string>/private/var/tmp/jamfMigrator.sh</string>
+		<string>-c</string>
+		<string>(/private/var/tmp/jamfMigrator.sh)</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>
 	<key>StartInterval</key>
 	<integer>600</integer>
+	<key>AbandonProcessGroup</key>
+	<true/>
 </dict>
 </plist>
