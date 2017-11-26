@@ -3,9 +3,14 @@
 ###################################################################################################
 # Script Name:  jamfMigrator.sh
 # By:  Zack Thompson / Created:  11/17/2017
-# Version:  0.5 / Updated:  11/21/2017 / By:  ZT
+# Version:  1.0 / Updated:  11/21/2017 / By:  ZT
 #
 # Description:  This script uses the Jamf API to mark the device as unmanaged, remove the current Jamf Framework, then install a new QuickAdd package, and finally cleanup after itself.
+#
+# Inspired by several discussions on JamfNation:
+#	https://www.jamf.com/jamf-nation/discussions/10866/un-manage-and-keep-in-inventory
+#	https://www.jamf.com/jamf-nation/discussions/10456/remove-framework-after-imaging
+#	And several other threads I've read regarding Jamf managed state recovery methods (See:  rtrouton's CasperCheck)
 #
 ###################################################################################################
 
@@ -20,6 +25,7 @@
 	jamfURL="${oldJSS}/JSSResource/computers/udid/"
 	jamfBinary="/usr/local/bin/jamf"
 	getUUID=$(/usr/sbin/ioreg -rd1 -c IOPlatformExpertDevice | /usr/bin/awk '/IOPlatformUUID/ { split($0, line, "\""); printf("%s\n", line[4]); }')
+	osVersion=$(sw_vers -productVersion | /usr/bin/awk -F '.' '{print $2}')
 	unmanagePayload="/private/tmp/unmanage_UUID.xml"
 	launchDaemonLabel="com.github.mlbz521.jamfMigrator"
 	launchDaemonLocation="/Library/LaunchDaemons/${launchDaemonLabel}.plist"
@@ -40,7 +46,6 @@
 
 	function checkJSSConnection {
 		if [[ -e $jamfBinary ]]; then
-			/usr/bin/logger -s "Checking if current JSS instance is available..."
 			checkAvailablity=$(${jamfBinary} checkJSSConnection)
 				# Function exitStatus
 					exitStatus $? "${1} is unavailable at this time.  Suspending until next interval..."
@@ -62,8 +67,8 @@
 			elif [[ $checkAvailablity == *"${newJSS}"* ]]; then
 				# This elif is for, if somehow on the first checkJSSConnection run, it's connected to the new JSS, then we're good to go.
 				/usr/bin/logger -s "Connected to the new JSS instance!"
-				exit 0
 				/usr/bin/logger -s "*****  jssMigrator process:  COMPLETE  *****"
+				exit 0
 			fi
 		else
 			/usr/bin/logger -s "Unable to run \`jamf checkJSSConnection\`"
@@ -84,9 +89,14 @@
 	function tearDown {
 		# Unload LaunchDaemon
 			/usr/bin/logger -s "Unloading LaunchDaemon"
-			/bin/launchctl unload $launchDaemonLocation
-				# Function exitStatus
-					exitStatus $?
+			# Determine proper launchctl syntax
+			if [[ ${osVersion} -ge 11 ]]; then
+				/bin/launchctl bootout system $launchDaemonLocation
+			elif [[ ${osVersion} -le 10 ]]; then
+				/bin/launchctl unload $launchDaemonLocation
+			fi
+			# Function exitStatus
+				exitStatus $?
 
 		# Remove LaunchDaemon
 			/usr/bin/logger -s "Deleting LaunchDaemon"
@@ -122,6 +132,7 @@
 ##################################################
 # Now that we have our work setup... 
 
+/usr/bin/logger -s "Checking if the current JSS instance is available..."
 # Function checkJSSConnection
 	checkJSSConnection $oldJSS
 
@@ -140,6 +151,7 @@
 # Function enrollMachine
 	enrollMachine
 
+/usr/bin/logger -s "Checking if new JSS instance is available..."
 # Function checkJSSConnection
 	checkJSSConnection $newJSS
 
