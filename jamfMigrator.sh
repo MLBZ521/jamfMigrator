@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###################################################################################################
-# Script Name:  jamf_unmanageComputer.sh
+# Script Name:  jamfMigrator.sh
 # By:  Zack Thompson / Created:  11/17/2017
 # Version:  0.4 / Updated:  11/20/2017 / By:  ZT
 #
@@ -9,7 +9,7 @@
 #
 ###################################################################################################
 
-/bin/echo "Starting unmanage script..."
+/bin/echo "Starting jamfMigrator script..."
 
 ##################################################
 # Define Variables
@@ -20,7 +20,8 @@
 	jamfURL="${oldJSS}/JSSResource/computers/udid/"
 	getUUID=$(/usr/sbin/ioreg -rd1 -c IOPlatformExpertDevice | /usr/bin/awk '/IOPlatformUUID/ { split($0, line, "\""); printf("%s\n", line[4]); }')
 	unmanagePayload="/private/tmp/unmanage_UUID.xml"
-	unmanageLaunchDaemon="/Library/LaunchDaemons/com.github.mlbz521.UnmanageComputer.plist"
+	launchDaemonLabel="com.github.mlbz521.jamfMigrator"
+	launchDaemonLocation="/Library/LaunchDaemons/${launchDaemonLabel}.plist"
 	enrollPkg="/private/var/tmp/QuickAdd.pkg"
 
 # Stage the "unmanage" PUT payload
@@ -64,12 +65,12 @@
 
 	function tearDown {
 		# Unload LaunchDaemon
-			/bin/launchctl unload $unmanageLaunchDaemon
+			/bin/launchctl unload $launchDaemonLocation
 				# Function exitStatus
 					exitStatus $? "Unloading LaunchDaemon"
 
 		# Remove LaunchDaemon
-			/bin/rm -f $unmanageLaunchDaemon
+			/bin/rm -f $launchDaemonLocation
 				# Function exitStatus
 					exitStatus $? "Deleting LaunchDaemon"
 

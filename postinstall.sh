@@ -10,11 +10,11 @@
 ###################################################################################################
 
 # Define the Variables
-	unManageComputer="com.github.mlbz521.UnmanageComputer"
-	unmanageLaunchDaemon="/Library/LaunchDaemons/${unManageComputer}.plist"
+	launchDaemonLabel="com.github.mlbz521.jamfMigrator"
+	launchDaemonLocation="/Library/LaunchDaemons/${launchDaemonLabel}.plist"
 
 # Load the LaunchDaemon
-	/bin/launchctl bootstrap system $unmanageLaunchDaemon
-	/bin/launchctl enable system/$unManageComputer
+	/bin/launchctl bootstrap system $launchDaemonLocation
+	/bin/launchctl enable system/$launchDaemonLabel
 
 exit 0
