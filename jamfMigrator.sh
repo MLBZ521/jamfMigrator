@@ -22,7 +22,7 @@
 	oldJSS="https://oldjss.company.com.edu:8443"
 	jamfAPIUser="APIUsername"
 	jamfAPIPassword="APIPassword"
-	jamfURL="${oldJSS}/JSSResource/computers/udid/"
+	jamfURL="${oldJSS}/JSSResource/computers/udid"
 	jamfBinary="/usr/local/bin/jamf"
 	getUUID=$(/usr/sbin/ioreg -rd1 -c IOPlatformExpertDevice | /usr/bin/awk '/IOPlatformUUID/ { split($0, line, "\""); printf("%s\n", line[4]); }')
 	osVersion=$(sw_vers -productVersion | /usr/bin/awk -F '.' '{print $2}')
