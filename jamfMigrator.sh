@@ -14,7 +14,7 @@
 #
 ###################################################################################################
 
-/usr/bin/logger -s "*****  jssMigrator process:  START  *****"
+/usr/bin/logger -s "*****  jamfMigrator process:  START  *****"
 
 ##################################################
 # Define Variables
@@ -67,7 +67,7 @@
 			elif [[ $checkAvailablity == *"${newJSS}"* ]]; then
 				# This elif is for, if somehow on the first checkJSSConnection run, it's connected to the new JSS, then we're good to go.
 				/usr/bin/logger -s "Connected to the new JSS instance!"
-				/usr/bin/logger -s "*****  jssMigrator process:  COMPLETE  *****"
+				/usr/bin/logger -s "*****  jamfMigrator process:  COMPLETE  *****"
 				exit 0
 			fi
 		else
@@ -158,6 +158,6 @@
 # Function tearDown
 	tearDown
 
-/usr/bin/logger -s "*****  jssMigrator process:  COMPLETE  *****"
+/usr/bin/logger -s "*****  jamfMigrator process:  COMPLETE  *****"
 
 exit 0
