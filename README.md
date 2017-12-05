@@ -8,6 +8,11 @@ The overall scope of this project is to:
 
 In my testing, the overall process took, from policy execution to the script completing, roughly one minute and fifteen seconds.
 
+**Inspired by several discussions on JamfNation:**
+* https://www.jamf.com/jamf-nation/discussions/10866/un-manage-and-keep-in-inventory
+* https://www.jamf.com/jamf-nation/discussions/10456/remove-framework-after-imaging
+* And several other threads I've read regarding Jamf managed state recovery methods (See:  rtrouton's CasperCheck)
+
 ## Setup ##
 
 * Edit the `jamfMigrator.sh` script and modify the following values:
@@ -25,7 +30,7 @@ API Permissions I needed were:
 
 Create a payload-free package with all three files and a QuickAdd package created for the new JSS instance
   * If using `munkipkg`, add all files into the scripts folder
-  * If using Packages, add the `postinstall.sh` script as the Post-installtion script and all other files into Scripts > Additional Resources
+  * If using Packages, add the `postinstall.sh` script as the Post-installation script and all other files into Scripts > Additional Resources
 
 
 ## Logic ##
