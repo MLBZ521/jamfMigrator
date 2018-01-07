@@ -1,10 +1,14 @@
 # jamfMigrator
 This project assists with migrating from one JSS to another JSS.  I will describe the setup process and logic of the script below.
 
+I've added an additional workflow to this project to include some kind of option for 'migrating' FileVault keys to the new JSS.
+
 The overall scope of this project is to:
+  * If you want to migrate FileVault Keys, pre-stage a FileVault Enabled Account.
   * Mark the computer in the old Jamf environment as “unmanaged” – so you can easily track what has, and has not, migrated
   * Remove the old Jamf Framework – which removes the main MDM Profile and all traces of Jamf related Config Profiles, MDM certs, etc
   * Join computer to the new Jamf environment in a clean state
+  * Reissue a new FileVault Personal Recovery Key
 
 In my testing, the overall process took, from policy execution to the script completing, roughly one minute and fifteen seconds.
 
@@ -13,9 +17,13 @@ In my testing, the overall process took, from policy execution to the script com
 * https://www.jamf.com/jamf-nation/discussions/10456/remove-framework-after-imaging
 * And several other threads I've read regarding Jamf managed state recovery methods (See:  rtrouton's CasperCheck)
 
+#### WorkFlow ####
+
+![Flow Chart](https://github.com/MLBZ521/jamfMigrator/blob/master/jamfMigrator.png "JamfMigrator Flow Chart")
+
 ## Setup ##
 
-* Edit the `jamfMigrator.sh` script and modify the following values:
+Edit the `jamfMigrator.sh` script and modify the following values:
   * `newJSS`
   * `oldJSS`
   * `jamfAPIUser`
@@ -31,6 +39,19 @@ API Permissions I needed were:
 Create a payload-free package with all three files and a QuickAdd package created for the new JSS instance
   * If using `munkipkg`, add all files into the scripts folder
   * If using Packages, add the `postinstall.sh` script as the Post-installation script and all other files into Scripts > Additional Resources
+
+Grab the `reissue_FileVaultPRK.sh` script [here](https://github.com/MLBZ521/macOS.JAMF/blob/master/Scripts/reissue_FileVaultPRK.sh)
+
+Upload these items:
+  * `jamfMigrator.pkg` to the old JSS
+  * `reissue_FileVaultPRK.sh` to the new JSS
+
+Create the following Policies:
+  * In the Old JSS
+    * Policy to Create a FileVault Enabled User.  [Example](https://github.com/MLBZ521/jamfMigrator/blob/master/Create%20FV_enabled%20User.png)
+    * Policy to deploy the `jamfMigrator.pkg` Package
+  * In the New JSS
+    * Policy with the `reissue_FileVaultPRK.sh` with a known FileVault Unlock Key.  [Example](https://github.com/MLBZ521/jamfMigrator/blob/master/FV2%20Reissue%20Script.png)
 
 
 ## Logic ##
