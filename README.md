@@ -4,11 +4,10 @@ This project assists with migrating from one JSS to another JSS.  I will describ
 I've added an additional workflow to this project to include some kind of option for 'migrating' FileVault keys to the new JSS.
 
 The overall scope of this project is to:
-  * If you want to migrate FileVault Keys, pre-stage a FileVault Enabled Account.
   * Mark the computer in the old Jamf environment as “unmanaged” – so you can easily track what has, and has not, migrated
   * Remove the old Jamf Framework – which removes the main MDM Profile and all traces of Jamf related Config Profiles, MDM certs, etc
   * Join computer to the new Jamf environment in a clean state
-  * Reissue a new FileVault Personal Recovery Key
+  * Reissue a new FileVault Personal Recovery Key (requires a known FileVault Unlock Key)
 
 In my testing, the overall process took, from policy execution to the script completing, roughly one minute and fifteen seconds.
 
@@ -48,7 +47,7 @@ Upload these items:
 
 Create the following Policies:
   * In the Old JSS
-    * Policy to Create a FileVault Enabled User.  [Example](https://github.com/MLBZ521/jamfMigrator/blob/master/Create%20FV_enabled%20User.png)
+    * *(If needed)* Policy to Create a FileVault Enabled User.  [Example](https://github.com/MLBZ521/jamfMigrator/blob/master/Create%20FV_enabled%20User.png)
     * Policy to deploy the `jamfMigrator.pkg` Package
   * In the New JSS
     * Policy with the `reissue_FileVaultPRK.sh` with a known FileVault Unlock Key.  [Example](https://github.com/MLBZ521/jamfMigrator/blob/master/FV2%20Reissue%20Script.png)
@@ -102,3 +101,16 @@ This script stages the bits to do the work.  You can use it with any payload-fre
     * `/bin/launchctl enable system/$launchDaemonLabel`
   * if <= 10.10
     * `/bin/launchctl load $launchDaemonLocation`
+
+
+#### reissue_FileVaultPRK.sh ####
+
+This script issues a new FileVault Personal Recovery Key.  It will require a known FileVault Unlock Key, which can be one of the following:
+  * A FileVault Enable Account with a known password
+  * Current FileVault Personal Recovery Key
+
+Obviously, the easiest and most 'scopable' way to do this to have a FileVault Enabled Account.  If you do not have a known FileVault Enable Account with a known password, then on ≤10.12, you can easily create one via Jamf before migrating to the new JSS.  (Jamf cannot create a FV_Enabled account on 10.13+ machines currently.)  
+
+Add the script to a Policy in the new JSS and enter the known Unlock Key in the Script Parameter.
+
+After migrating and after this policy successfully runs (i.e. the new JSS has a **valid** FileVault Recovery Key) the account can be FV disabled or deleted.
